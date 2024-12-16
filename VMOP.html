@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMOP - Virtual Machine Boot Manager</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e8f5e9;
+            color: #333;
+        }
+
+        header {
+            background-color: #00796b;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        main {
+            padding: 1em;
+        }
+
+        .boot-options, .ui-settings, .warnings {
+            margin-bottom: 2em;
+            padding: 1em;
+            background-color: #f1f8e9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin: 0.5em 0 0.2em;
+        }
+
+        input, select, button {
+            padding: 0.5em;
+            margin-bottom: 1em;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #00796b;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #004d40;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1em;
+            background-color: #004d40;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .sandbox-screen, .ipxe-screen {
+            text-align: center;
+            padding: 2em;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 1em;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .ipxe-screen {
+            color: #00695c;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 1em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>VMOP - Virtual Machine Boot Manager</h1>
+    </header>
+    <main>
+        <section class="boot-options">
+            <h2>Configure Your Virtual Machine</h2>
+            <form id="bootForm">
+                <!-- Tool Selection -->
+                <label for="mode">Choose Mode:</label>
+                <select id="mode">
+                    <option value="virtualbox">Basic Mode (VirtualBox)</option>
+                    <option value="vmware">Expert Mode (VMware)</option>
+                    <option value="hyperv">Windows Sandbox/Hyper-V</option>
+                    <option value="qemu">QEMU (Auto iPXE)</option>
+                </select>
+
+                <!-- ISO Detection -->
+                <label for="isoPath">ISO File Path:</label>
+                <input type="text" id="isoPath" placeholder="Enter ISO path (e.g., /path/to/file.iso)">
+
+                <!-- Start Button -->
+                <button type="submit">Start Virtual Machine</button>
+            </form>
+            <div id="errorMessage" class="error hidden">Error: Virtual machine already exists!</div>
+        </section>
+
+        <section class="warnings hidden" id="warningSection">
+            <h2>Warning</h2>
+            <p id="warningMessage">If you want to run your VM, you need to download the required virtualization software:</p>
+            <ul>
+                <li><a href="https://www.qemu.org/download/" target="_blank">QEMU Download</a></li>
+                <li><a href="https://www.vmware.com/products/desktop-hypervisor/workstation-and-fusion" target="_blank">VMware Download</a></li>
+                <li><a href="https://www.virtualbox.org/" target="_blank">VirtualBox Download</a></li>
+            </ul>
+            <p>If you want to enable Hyper-V or Windows Sandbox on Windows 10/11, search for them in the Start menu and enable one or both features.</p>
+        </section>
+
+        <section class="sandbox-screen hidden" id="sandboxScreen">
+            <h2>Windows Sandbox Mode</h2>
+            <p>You're running on Windows 10/11. Sandbox mode is active!</p>
+        </section>
+
+        <section class="ipxe-screen hidden" id="ipxeScreen">
+            <h2>QEMU iPXE Boot</h2>
+            <p>iPXE boot is initializing. Please wait...</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 VMOP Virtual Machine Boot Manager</p>
+    </footer>
+
+    <script>
+        // Simulating the virtual machine creation check (this can be adjusted to real checks if needed)
+        let vmExists = false; // This would typically come from checking existing VMs or user session
+
+        document.getElementById('bootForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get the mode selection value and ISO path
+            const mode = document.getElementById('mode').value;
+            const isoPath = document.getElementById('isoPath').value;
+
+            // Show error message if VM already exists
+            if (vmExists) {
+                document.getElementById('errorMessage').classList.remove('hidden');
+                return;
+            }
+
+            // If no ISO path is entered, show an alert
+            if (isoPath === "") {
+                alert("Please enter a valid ISO file path.");
+                return;
+            }
+
+            // Show the warning message if necessary
+            if (mode === 'qemu' || mode === 'vmware' || mode === 'virtualbox' || mode === 'hyperv') {
+                document.getElementById('warningSection').classList.remove('hidden');
+            }
+
+            // Handle different VM modes
+            if (mode === 'qemu') {
+                document.getElementById('ipxeScreen').classList.remove('hidden');
+            } else if (mode === 'virtualbox') {
+                alert("VirtualBox will start in a new window.");
+                window.open('https://www.virtualbox.org/', '_blank'); // Open VirtualBox site in a new window
+            } else if (mode === 'vmware') {
+                alert("VMware will start in a new window.");
+                window.open('https://www.vmware.com/products/desktop-hypervisor/workstation-and-fusion', '_blank'); // Open VMware site in a new window
+            } else if (mode === 'hyperv') {
+                alert("Hyper-V will start in a new window.");
+            }
+
+            // Mark VM as created after submission (for simulation purposes)
+            vmExists = true; // This should be set to 'true' once the VM is actually created
+        });
+    </script>
+</body>
+</html>
